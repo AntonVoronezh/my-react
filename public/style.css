@@ -50,3 +50,25 @@ body {
 .lot p {
     margin: 0;
 }
+
+.clock .value {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 15px;
+}
+
+.clock .icon {
+    display: inline-block;
+    vertical-align: middle;
+    width: 15px;
+    height: 15px;
+    border-radius: 15px;
+}
+
+.clock .icon.day {
+    background-color: #ef7b00;
+}
+
+.clock .icon.night {
+    background-color: #2459a7;
+}
