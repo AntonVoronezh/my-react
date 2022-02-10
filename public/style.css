@@ -72,3 +72,10 @@ body {
 .clock .icon.night {
     background-color: #2459a7;
 }
+
+.loading {
+    padding: 15px;
+    border-radius: 6px;
+    background: #eee;
+    text-align: center;
+}
