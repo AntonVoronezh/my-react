@@ -84,3 +84,14 @@ body {
     background: #eee;
     text-align: center;
 }
+
+button {
+    cursor: pointer;
+    background: #fff;
+    border: 1px solid #999;
+    color: #000;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 0.8rem;
+    outline: none;
+}
