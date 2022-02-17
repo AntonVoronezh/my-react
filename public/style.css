@@ -29,28 +29,6 @@ body {
     margin-bottom: 10px;
 }
 
-.lot {
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    margin-bottom: 10px;
-}
-
-.lot .price {
-    float: right;
-    text-align: right;
-    font-size: 1.2rem;
-}
-
-.lot h1 {
-    margin: 0 0 15px 0;
-    line-height: 1;
-}
-
-.lot p {
-    margin: 0;
-}
-
 .clock .value {
     display: inline-block;
     vertical-align: middle;
@@ -71,6 +49,33 @@ body {
 
 .clock .icon.night {
     background-color: #2459a7;
+}
+
+.lot {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.lot.favorite {
+    border-color: #ffd7cb;
+    background: #ffd7cb;
+}
+
+.lot .price {
+    float: right;
+    text-align: right;
+    font-size: 1.2rem;
+}
+
+.lot h1 {
+    margin: 0 0 15px 0;
+    line-height: 1;
+}
+
+.lot p {
+    margin: 0 0 15px 0;
 }
 
 .loading {
