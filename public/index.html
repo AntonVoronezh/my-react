@@ -4,9 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Demo</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
     <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-router-dom@5.2.0/umd/react-router-dom.js" crossorigin></script>
     <script src="https://unpkg.com/redux@4/dist/redux.js" crossorigin></script>
     <script src="https://unpkg.com/react-redux@7/dist/react-redux.js" crossorigin></script>
     <script src="https://unpkg.com/redux-thunk@2/dist/redux-thunk.js" crossorigin></script>
@@ -47,7 +48,7 @@
                             } else {
                                 reject(new Error('Connection error'))
                             }
-                        }, 1000)
+                        }, 200)
                     })
                 default:
                     throw new Error('Unknown address')
@@ -96,6 +97,7 @@
         error: null
     }
 
+    const LOTS_CLEAR = 'LOTS_CLEAR'
     const LOTS_LOADING_PENDING = 'LOTS_LOADING_PENDING'
     const LOTS_LOADING_SUCCESS = 'LOTS_LOADING_SUCCESS'
     const LOTS_LOADING_ERROR = 'LOTS_LOADING_ERROR'
@@ -105,6 +107,14 @@
 
     function auctionReducer (state = auctionInitialState, action) {
         switch (action.type) {
+            case LOTS_CLEAR:
+                return {
+                    ...state,
+                    lots: [],
+                    loading: false,
+                    loaded: false,
+                    error: null
+                }
             case LOTS_LOADING_PENDING:
                 return {
                     ...state,
@@ -170,6 +180,12 @@
                 }
             default:
                 return state
+        }
+    }
+
+    function lotsClear () {
+        return {
+            type: LOTS_CLEAR
         }
     }
 
@@ -259,13 +275,18 @@
 
     // ##########################
 
+    const { BrowserRouter, Switch, Route, Link, NavLink, useParams } = ReactRouterDOM
+
+    // ##########################
+
     function App () {
         return (
-            <div className="app">
-                <Header />
-                <ClockContainer />
-                <LotsContainerConnected />
-            </div>
+            <BrowserRouter>
+                <div className="app">
+                    <Header />
+                    <Content />
+                </div>
+            </BrowserRouter>
         )
     }
 
@@ -273,12 +294,102 @@
         return (
             <header className="header">
                 <Logo />
+                <Nav />
             </header>
         )
     }
 
     function Logo () {
-        return <img className="logo" src="logo.png" alt="" />
+        return <img className="logo" src="/logo.png" alt="" />
+    }
+
+    function Nav () {
+        return (
+            <nav>
+                <ul>
+                    <li><NavLink to="/" exact>Home</NavLink></li>
+                    <li><NavLink to="/lots">Lots</NavLink></li>
+                    <li><NavLink to="/help" exact>Help</NavLink></li>
+                </ul>
+            </nav>
+        )
+    }
+
+    function Content () {
+        return (
+            <Switch>
+                <Route path="/" exact>
+                    <HomePage />
+                </Route>
+                <Route path="/lots" exact>
+                    <LotsPage />
+                </Route>
+                <Route path="/lots/:id" exact>
+                    <LotPage />
+                </Route>
+                <Route path="/help" exact>
+                    <HelpPage />
+                </Route>
+                <Route path="*">
+                    <NotFound />
+                </Route>
+            </Switch>
+        )
+    }
+
+    function NotFound () {
+        return <div>Not found!</div>
+    }
+
+    function Page ({ children }) {
+        return (
+            <section className="page">
+                {children}
+            </section>
+        )
+    }
+
+    function HomePage () {
+        return (
+            <Page>
+                <h1>Welcome</h1>
+                <p>Welcome to auction!</p>
+                <p>View <Link to="/lots">lots</Link> or read our <Link to="/help">help</Link></p>
+            </Page>
+        )
+    }
+
+    function HelpPage () {
+        return (
+            <Page>
+                <h1>Help</h1>
+                <p>Go to <Link to="/lots">lots</Link> and:</p>
+                <ol>
+                    <li>Choose an interesting lot</li>
+                    <li>Add the lot to favorite list</li>
+                </ol>
+                <p>Back to <Link to="/">home</Link></p>
+            </Page>
+        )
+    }
+
+    function LotsPage () {
+        return (
+            <>
+                <ClockContainer />
+                <LotsContainerConnected />
+            </>
+        )
+    }
+
+    function LotPage () {
+        const params = useParams()
+        return (
+            <Page>
+                <h1>Lot #{params.id}</h1>
+                <p>Lot description</p>
+            </Page>
+        )
     }
 
     function ClockContainer () {
@@ -309,19 +420,32 @@
         return <div className="loading">Loading...</div>
     }
 
-    function AlertError ({ message }) {
-        return <div className="error">{message}</div>
+    function AlertError ({ message, retry }) {
+        return (
+            <div className="error">
+                <span>{message}</span>
+                {retry ? (
+                    <ion-icon name="reload-circle" onClick={retry} />
+                ) : null}
+            </div>
+        )
     }
 
-    function LotsContainer ({ lots, loading, loaded, error, load }) {
+    function LotsContainer ({ lots, loading, loaded, error, load, unload }) {
         React.useEffect(() => {
             if (!loaded && !loading && error === null) {
                 load()
             }
         }, [loaded, loading, error])
 
+        React.useEffect(() => {
+            if (loaded || error !== null) {
+                return unload
+            }
+        }, [loaded, error])
+
         if (error !== null) {
-            return <AlertError message={error} />
+            return <AlertError message={error} retry={load} />
         }
 
         if (loading) {
@@ -343,7 +467,8 @@
     })
 
     const lotsContainerMapDispatchToProps = {
-        load: loadLotsAsync
+        load: loadLotsAsync,
+        unload: lotsClear
     }
 
     const LotsContainerConnected = ReactRedux.connect(
@@ -377,7 +502,9 @@
         return (
             <article className={'lot' + (lot.favorite ? ' favorite' : '')}>
                 <div className="price">{lot.price}</div>
-                <h1>{lot.name}</h1>
+                <h1>
+                    <Link to={'/lots/' + lot.id}>{lot.name}</Link>
+                </h1>
                 <p>{lot.description}</p>
                 <Favorite
                     active={lot.favorite}
